@@ -14,6 +14,7 @@ public class MovimientoJugador : MonoBehaviour
     Rigidbody2D cuerpo;
     Animator anim;
     bool saltando;
+    int vidaRestante;
 
     // Start is called before the first frame update
     void Start()
@@ -98,6 +99,31 @@ public class MovimientoJugador : MonoBehaviour
             anim.SetBool("Moviendo", true);
         }
     }
-       
+    void OnDrawGizmos()
+    {
+        if (EstaEnElSuelo())
+        {
+            Gizmos.color = Color.red;
+        }
+        Gizmos.DrawWireCube(transform.position + Vector3.down * distanciaSuelo, tamanoCajaSuelo);
+        Gizmos.color = Color.white;
+    }
+
+    public void RecibeDanno(int cuanto, Vector2 posEnemigo)
+    {
+        vidaRestante -= cuanto;
+        Debug.Log("Ouch!! Vida restante: " + vidaRestante);
+        if (vidaRestante <= 0) Destroy(gameObject);
+        Vector2 direccionAtaque = ((Vector2)transform.position) - posEnemigo;
+        direccionAtaque.Normalize();
+    }
+
+    void OnMouseDrag()
+    {
+        Vector3 mouseWP = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+        gameObject.transform.position = new Vector3(mouseWP.x, mouseWP.y, gameObject.transform.position.z);
+
+    }
+
 
 }
