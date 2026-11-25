@@ -9,38 +9,57 @@ public class MovimientoJugador : MonoBehaviour
     public float distanciaSuelo;
     public Vector2 tamanoCajaSuelo;
     public LayerMask capaSuelo;
+    public int vidaMax;
 
     Vector3 movimiento;
     Rigidbody2D cuerpo;
     Animator anim;
     bool saltando;
     int vidaRestante;
+    Vector2 knockBack;
+    bool muerto;
 
-    // Start is called before the first frame update
     void Start()
     {
         movimiento = new Vector3();
+        knockBack = Vector2.zero;
+        vidaRestante = vidaMax;
         cuerpo = GetComponent<Rigidbody2D>();
         anim = GetComponent<Animator>();
     }
 
-    // Update is called once per frame
     void Update()
     {
+        if (muerto) return;   // estadno muerto no se mueve ni ataca
+
         LeerMovimiento();
         LeerSalto();
+        LeerAtaque();
         RotarPersonaje();
         ActualizarAnim();
     }
+
     void FixedUpdate()
     {
+        if (muerto)
+        {
+            cuerpo.velocity = new Vector2(0, cuerpo.velocity.y);
+            return;
+        }
+
         cuerpo.velocity = new Vector2(movimiento.x * velocidad, cuerpo.velocity.y);
         if (saltando)
         {
             cuerpo.AddForce(Vector2.up * fuerzaSalto);
             saltando = false;
         }
+        if (knockBack != Vector2.zero)
+        {
+            cuerpo.AddForce(knockBack);
+            knockBack = Vector2.zero;
+        }
     }
+
     void LeerMovimiento()
     {
         if (Input.GetKey(KeyCode.A))
@@ -70,6 +89,7 @@ public class MovimientoJugador : MonoBehaviour
             return false;
         }
     }
+
     void LeerSalto()
     {
         if (Input.GetKeyDown(KeyCode.Space) && !saltando && EstaEnElSuelo())
@@ -77,6 +97,16 @@ public class MovimientoJugador : MonoBehaviour
             saltando = true;
         }
     }
+
+    // ataca con clic izquierdo y activa el trigger Atacando del Animator
+    void LeerAtaque()
+    {
+        if (Input.GetMouseButtonDown(0))
+        {
+            anim.SetTrigger("Atacando");
+        }
+    }
+
     void RotarPersonaje()
     {
         if (movimiento.x < 0)
@@ -88,6 +118,7 @@ public class MovimientoJugador : MonoBehaviour
             transform.rotation = new Quaternion(0, 0, 0, 0);
         }
     }
+
     void ActualizarAnim()
     {
         if (movimiento.x == 0)
@@ -99,6 +130,7 @@ public class MovimientoJugador : MonoBehaviour
             anim.SetBool("Moviendo", true);
         }
     }
+
     void OnDrawGizmos()
     {
         if (EstaEnElSuelo())
@@ -109,21 +141,31 @@ public class MovimientoJugador : MonoBehaviour
         Gizmos.color = Color.white;
     }
 
+    // recibe danno lo llama el lobo en el evento golpear
     public void RecibeDanno(int cuanto, Vector2 posEnemigo)
     {
+        if (muerto) return;
+
         vidaRestante -= cuanto;
         Debug.Log("Ouch!! Vida restante: " + vidaRestante);
-        if (vidaRestante <= 0) Destroy(gameObject);
+
         Vector2 direccionAtaque = ((Vector2)transform.position) - posEnemigo;
         direccionAtaque.Normalize();
+        knockBack = direccionAtaque * 250 + 100 * Vector2.up;
+
+        if (vidaRestante <= 0)
+        {
+            muerto = true;
+            movimiento = Vector3.zero;
+            anim.SetBool("Moviendo", false);
+            anim.SetTrigger("Muerte");
+        }
     }
 
-    void OnMouseDrag()
+    // al morir lo llama el evento de animación "Desaparecer" al final de Muere.
+    // Se podría hacer una pantalla de derrota¿?
+    public void Desaparecer()
     {
-        Vector3 mouseWP = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-        gameObject.transform.position = new Vector3(mouseWP.x, mouseWP.y, gameObject.transform.position.z);
-
+        Destroy(gameObject);
     }
-
-
 }
