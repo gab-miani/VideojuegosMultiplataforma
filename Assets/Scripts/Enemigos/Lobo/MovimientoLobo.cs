@@ -21,7 +21,7 @@ public class MovimientoLobo : MonoBehaviour, IGolpeable
         anim = GetComponent<Animator>();
         sprite = GetComponent<SpriteRenderer>();
         vida = vidaMax;
-        direccion = 1;
+        direccion = -1;
     }
 
     void Update()
@@ -53,7 +53,7 @@ public class MovimientoLobo : MonoBehaviour, IGolpeable
         }
     }
 
-    // DETECTAR: lanza una caja delante del lobo; si toca al jugador, devuelve true
+    // DETECTAR: lanza una caja delante del lobo, si toca al jugador devuelve true
     bool DetectarJugador()
     {
         RaycastHit2D rayo = Physics2D.BoxCast(
@@ -82,11 +82,11 @@ public class MovimientoLobo : MonoBehaviour, IGolpeable
     }
 
     // RECIBIR DAÑO: lo llama el ataque del jugador
-    public void RecibeGolpe(int danno)
+    public void RecibeGolpe(int danno )
     {
         if (muerto) return;
 
-        vida -= danno;
+        vida -= danno + 2; //para que le haga más daño el prota
         if (vida <= 0)
         {
             muerto = true;
