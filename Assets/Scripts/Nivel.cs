@@ -5,7 +5,6 @@ using UnityEngine;
 public class Nivel : MonoBehaviour
 {
     public Transform destinoJugador;      // InicioNivel2, o un punto en PantallaVictoria
-    public Transform destinoCamara;       
     public bool congelarJugador = false;  // true en victoria/derrota: el jugador ya no se mueve
 
     bool usada;
@@ -26,20 +25,6 @@ public class Nivel : MonoBehaviour
         if (rb != null) rb.velocity = Vector2.zero;
         jugador.transform.position = new Vector3(
             destinoJugador.position.x, destinoJugador.position.y, jugador.transform.position.z);
-
-        // 2. Colocar la cámara de golpe (luego sigue al jugador sola
-        Camera cam = Camera.main;
-        if (cam != null)
-        {
-            float x = destinoJugador.position.x;
-            float y = cam.transform.position.y;
-            if (destinoCamara != null)
-            {
-                x = destinoCamara.position.x;
-                y = destinoCamara.position.y;
-            }
-            cam.transform.position = new Vector3(x, y, cam.transform.position.z);
-        }
 
         // 3. En victoria/derrota, dejar al jugador quieto
         if (congelarJugador)
